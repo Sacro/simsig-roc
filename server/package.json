@@ -9,6 +9,10 @@
   },
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=22.18.0 <24",
+    "npm": "~10.9.3"
+  },
   "dependencies": {
     "@stomp/stompjs": "^7.0.0",
     "@stomp/tcp-wrapper": "^1.0.1",
@@ -20,6 +24,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@tsconfig/node-lts": "^22.0.2",
+    "@tsconfig/node-ts": "^23.6.1",
+    "@tsconfig/strictest": "^2.0.5",
     "@types/jest": "^29.5.14",
     "eslint": "^8.57.1",
     "globals": "^15.14.0",
