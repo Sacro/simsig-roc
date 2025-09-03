@@ -1,63 +1,41 @@
-/** @typedef {import("./phone.js").default} Phone */
-
-import iLocatable from "./iLocatable.js";
+import iLocatable from './iLocatable.ts'
+import { Phone } from './phone.ts'
 
 export default class Train extends iLocatable {
-  /** @type {string} */
-  #uid;
-  /** @type {string} */
-  #simId;
-  /** @type {string} */
-  #headcode;
-  /** @type {Phone} */
-  #phone = null;
-  /** @type {Phone[]} */
-  #passengers = [];
+  #uid: string
+  #simId: string
+  #headcode: string
+  #phone: Phone | null = null
+  // #passengers: Phone[] = []
 
-  /**
-   * 
-   * @param {string} headcode 
-   */
-  constructor(simId, uid,headcode) {
-    super();
-    this.#simId = simId;
-    this.#uid = uid;
+  constructor(simId: string, uid: string, headcode: string) {
+    super()
+    this.#simId = simId
+    this.#uid = uid
     this.#headcode = headcode
   }
 
   getSUID() {
-    return this.#simId + this.#uid;
+    return this.#simId + this.#uid
   }
 
-  /**
-   * 
-   * @param {Phone} passenger 
-   */
-  addPassenger(passenger) {
-    this.#passengers.push(passenger)
-  }
+  // addPassenger(passenger: Phone) {
+  //   this.#passengers.push(passenger)
+  // }
 
-  /**
-   * 
-   * @param {Phone} phone 
-   */
-  setPhone(phone) {
-    this.#phone = phone;
+  setPhone(phone: Phone) {
+    this.#phone = phone
   }
 
   getHeadcode() {
-    return this.#headcode;
+    return this.#headcode
   }
 
-  setHeadcode(headcode) {
-    this.#headcode = headcode;
+  setHeadcode(headcode: string) {
+    this.#headcode = headcode
   }
 
-  /**
-   * 
-   * @returns {Phone}
-   */
   getPhone() {
-    return this.#phone;
+    return this.#phone
   }
 }

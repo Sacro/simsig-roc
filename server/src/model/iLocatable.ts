@@ -1,72 +1,49 @@
-/** @typedef {import("./location.js").default} Location */
+import type Location from './location.ts'
 
 export default class iLocatable {
-  
-  /** @type {iLocatable} */
-  #carrier = null;
+  #carrier: iLocatable | null = null
 
-  /** @type {Location | null} */
-  #location;
+  #location: Location | null
 
-  constructor(location = null) {
-    this.#location = location;
+  constructor(location: Location | null = null) {
+    this.#location = location
   }
 
-  /**
-   * 
-   * @returns {Location | null}
-   */
-  getLocation() {
-    if(this.#carrier) {
-      return this.#carrier.getLocation();
-    } else {
-      return this.#location;
+  getLocation(): Location | null {
+    if (this.#carrier) {
+      return this.#carrier.getLocation()
+    }
+    else {
+      return this.#location
     }
   }
 
-  /**
-   * 
-   * @param {Location | null} location 
-   */ 
-  setLocation(location) {
-    if(this.#carrier) {
+  setLocation(location: Location | null) {
+    if (this.#carrier) {
       throw new Error('Attempting to set location of phone that has a carrier')
-    } else {
-      this.#location = location;
+    }
+    else {
+      this.#location = location
     }
   }
 
-  /**
-   * 
-   * @param {iLocatable} loc 
-   * @returns 
-   */
-  isInSameSim(loc) {
-    const myLoc = this.getLocation();
-    if (!loc  || !loc.getLocation() || !myLoc)  {
-      return false;
+  isInSameSim(loc: iLocatable) {
+    const myLoc = this.getLocation()
+    if (!loc.getLocation() || !myLoc) {
+      return false
     }
-    return myLoc.simId === loc.getLocation().simId;
+    return myLoc.simId === loc.getLocation()?.simId
   }
 
-  /**
-   * 
-   * @param {iLocatable} loc 
-   * @returns 
-   */
-  isInSamePanel(loc) {
-    const myLoc = this.getLocation();
-    if (!loc || !loc.getLocation() || !myLoc)  {
-      return false;
+  isInSamePanel(loc: iLocatable) {
+    const myLoc = this.getLocation()
+    if (!loc.getLocation() || !myLoc) {
+      return false
     }
-    return myLoc.simId === loc.getLocation().simId && myLoc.panelId === loc.getLocation().panelId;
+    return myLoc.simId === loc.getLocation()?.simId && myLoc.panelId === loc.getLocation()?.panelId
   }
 
-  /**
- * 
- * @param {iLocatable} carrier 
- */
-  setCarrier(carrier) {
+  setCarrier(carrier: iLocatable) {
     this.#carrier = carrier
   }
 }

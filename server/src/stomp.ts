@@ -1,133 +1,124 @@
-// @ts-check
-import chalk from 'chalk';
-import { Client, StompHeaders } from '@stomp/stompjs';
-import { TCPWrapper } from '@stomp/tcp-wrapper';
-import GameStompClient from './model/gameStompClient.js';
-import TrainLocationMessage from './model/trainLocationMessage.js';
-/** @typedef {import("./trainManager.js").default} TrainManager */
-/** @typedef {import("./phonemanager.js").default} PhoneManager */
-/** @typedef {import("./ROCManager.js").default} ROCManager */
+import chalk from 'chalk'
+import { Client, StompHeaders } from '@stomp/stompjs'
+import { TCPWrapper } from '@stomp/tcp-wrapper'
+import GameStompClient from './model/gameStompClient.js'
+import TrainLocationMessage from './model/trainLocationMessage.js'
+import ROCManager from './ROCManager'
+import PhoneManager from './phonemanager'
+import TrainManager from './trainManager'
 
 export default class STOMPManager {
-  /** @type {ROCManager} */
-  gameManager;
-  /** @type {PhoneManager} */
-  phoneManager;
-  /** @type {GameStompClient[]} */
-  clients = []
-  /** @type {TrainManager} */
-  trainManager
+  gameManager: ROCManager
+  phoneManager: PhoneManager
+  clients: GameStompClient[] = []
+  trainManager: TrainManager
 
   constructor() {
-    this.clients = [];
+    this.clients = []
   }
 
-  /**
-   * 
-   * @param {ROCManager} gameManager 
-   */
-  setGameManager(gameManager) {
-    this.gameManager = gameManager;
-    this.trainManager.setGameManager(gameManager);
+  setGameManager(gameManager: ROCManager) {
+    this.gameManager = gameManager
+    this.trainManager.setGameManager(gameManager)
   }
 
-  /**
-   * 
-   * @param {TrainManager} trainManager 
-   */
-  setTrainManager(trainManager) {
-    this.trainManager = trainManager;
+  setTrainManager(trainManager: TrainManager) {
+    this.trainManager = trainManager
   }
 
-  createClientForGame(game, port) {
-    if ("interfaceGateway" in game) {
-      if (!("host" in game) || !port) {
-        console.error(chalk.yellow('createClientForSim'), chalk.red("Invalid Interface Gateway configuration for", game.id));
-        return false;
+  createClientForGame(game: { host: string, id: string, interfaceGateway: { connected: boolean, login: string, password: string } }, port: number) {
+    if ('interfaceGateway' in game) {
+      if (!('host' in game) || !port) {
+        console.error(chalk.yellow('createClientForSim'), chalk.red('Invalid Interface Gateway configuration for', game.id))
+        return false
       }
 
-      let clientConnectHeaders = new StompHeaders();
-      clientConnectHeaders.ack = 'auto';
-      if(game.interfaceGateway.login) {
+      const clientConnectHeaders = new StompHeaders()
+      clientConnectHeaders['ack'] = 'auto'
+
+      if (game.interfaceGateway.login) {
         console.log(chalk.green('Using credential to login'), game.interfaceGateway.login)
-        clientConnectHeaders.login = game.interfaceGateway.login;
-        clientConnectHeaders.passcode = game.interfaceGateway.password;
+        clientConnectHeaders['login'] = game.interfaceGateway.login
+        clientConnectHeaders['passcode'] = game.interfaceGateway.password
       }
 
       const client = new Client({
         connectHeaders: clientConnectHeaders,
         webSocketFactory: () => new TCPWrapper(game.host, port),
         onConnect: (iFrame) => {
-          console.log("STOMP Connect");
-          console.log(iFrame);
-          game.interfaceGateway.connected = true;
-          this.gameManager.updateAdminUI();
+          console.log('STOMP Connect')
+          console.log(iFrame)
+          game.interfaceGateway.connected = true
+          this.gameManager.updateAdminUI()
           client.subscribe('/topic/SimSig', (message) => {
-            const clockMessage = JSON.parse(message.body);
+            const clockMessage = JSON.parse(message.body)
             if (clockMessage) {
-              if ("clock_msg" in clockMessage) {
-                this.gameManager.updateSimTime(clockMessage["clock_msg"]);
+              if ('clock_msg' in clockMessage) {
+                this.gameManager.updateSimTime(clockMessage.clock_msg)
               }
             }
-          },{ack: 'auto'});
+          }, { ack: 'auto' })
           client.subscribe('/topic/TRAIN_MVT_ALL_TOC', (rawMessage) => {
-            const message = JSON.parse(rawMessage.body);
-            if(message.train_location) {
-              //console.log(`TRAIN_MVT_ALL_TOC:`, rawMessage.headers, message)
+            const message = JSON.parse(rawMessage.body)
+            if (message.train_location) {
+              // console.log(`TRAIN_MVT_ALL_TOC:`, rawMessage.headers, message)
               try {
-                this.trainManager.handleTrainLocationMessage(new TrainLocationMessage(game.sim,message))
-              } catch (error) {
+                this.trainManager.handleTrainLocationMessage(new TrainLocationMessage(game.sim, message))
+              }
+              catch (error) {
                 console.error(chalk.redBright('TRAIN_MVT_ALL_TOC'), JSON.stringify(error, Object.getOwnPropertyNames(error)))
               }
-            } else {
-              //console.log('Ignoring train delay message');
             }
-          },{ack: 'auto'}
-          );
+            else {
+              // console.log('Ignoring train delay message');
+            }
+          }, { ack: 'auto' },
+          )
         },
         onStompError: (frame) => {
-          console.log("STOMP StompError", frame.body);
+          console.log('STOMP StompError', frame.body)
         },
         onWebSocketError: (event) => {
-          console.log("STOMP WebSocketError", event);
-          game.interfaceGateway.connected = false;
+          console.log('STOMP WebSocketError', event)
+          game.interfaceGateway.connected = false
           this.gameManager.updateAdminUI()
         },
-      });
+      })
       // client.debug = function (str) {
       //   console.log(str);
       // };
 
-      console.info(chalk.yellow('createClientForGame'), chalk.white("Created Interface Gateway configuration for", game.host));
+      console.info(chalk.yellow('createClientForGame'), chalk.white('Created Interface Gateway configuration for', game.host))
       if (game.interfaceGateway.enabled === true) {
-        client.activate();
-        console.info(chalk.yellow('createClientForGame'), game.host, chalk.white("Interface Gateway"), chalk.green('ACTIVATED'));
-      } else {
-        console.info(chalk.yellow('createClientForGame'), game.host, chalk.white("Interface Gateway"), chalk.red('DISABLED'));
+        client.activate()
+        console.info(chalk.yellow('createClientForGame'), game.host, chalk.white('Interface Gateway'), chalk.green('ACTIVATED'))
+      }
+      else {
+        console.info(chalk.yellow('createClientForGame'), game.host, chalk.white('Interface Gateway'), chalk.red('DISABLED'))
       }
 
-      this.clients.push(new GameStompClient(game.sim, game, client));
-
-    } else {
-      console.info(chalk.yellow('createClientForGame'), chalk.red("No Interface Gateway configuration for", game.host));
+      this.clients.push(new GameStompClient(game.sim, game, client))
+    }
+    else {
+      console.info(chalk.yellow('createClientForGame'), chalk.red('No Interface Gateway configuration for', game.host))
     }
   }
 
   activateClientForGame(simId) {
     const gameClient = this.clients.find(c => c.id === simId)
     if (gameClient) {
-      gameClient.client.activate();
-      gameClient.game.interfaceGateway.enabled = true;
-      return true;
+      gameClient.client.activate()
+      gameClient.game.interfaceGateway.enabled = true
+      return true
     }
-    return false;
+    return false
   }
 
   deactivateClientForGame(simId) {
     const gameClient = this.clients.find(c => c.id === simId)
     if (gameClient) {
-      gameClient.client.deactivate();
-      gameClient.game.interfaceGateway.enabled = false;
+      gameClient.client.deactivate()
+      gameClient.game.interfaceGateway.enabled = false
     }
   }
 }

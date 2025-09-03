@@ -1,20 +1,20 @@
-/** @typedef {import("./phone.js").default} Phone */
-/** @typedef {import("./location.js").default} Location */
+import Player from './player.ts'
+import { Phone } from './phone.ts'
+import type Location from './location.ts'
+
 export default class Panel {
-  id;
-  name;
-  player;
-  /** @type {Location[]} */
-  neighbours = [];
+  id?: string
+  name?: string
+  player?: Player
+  neighbours: Location[] = []
 
-  /**@type {Phone} */
-  phone;
+  phone?: Phone
 
-  static fromSimData(panelData) {
-    const panel = new Panel();
-    panel.id = panelData.id;
-    panel.name = panelData.name;
-    panelData.neighbours.forEach(p => panel.neighbours.push(p));
-    return panelData;
+  static fromSimData(panelData: { id: string, name: string, neighbours: Location[] }) {
+    const panel = new Panel()
+    panel.id = panelData.id
+    panel.name = panelData.name
+    panelData.neighbours.forEach(p => panel.neighbours.push(p))
+    return panelData // TODO: should this not be 'panel'?
   }
 }

@@ -1,58 +1,37 @@
-// @ts-check
-import ClockData from "./clockData.js";
-import Panel from "./panel.js";
+import ClockData from './clockData.ts'
+import type Location from './location.ts'
+import Panel from './panel.ts'
 
 export default class Simulation {
-  id;
-  /** @type {Panel[]} */
-  panels = [];
-  /** @type {boolean} */
-  enabled = true;
-  /** @type {boolean} */
-  connectionsOpen = true;
-  /** @type {string} */
-  name;
-  /** @type {{channel: string; host: string; port: number; interfaceGateway: { connected: boolean; enabled: boolean; }}} */
-  config;
-  
-  /** @type {Map<string, string>} */
-  locationToPanelMap = new Map()
-  /** @type {ClockData} */
-  time;
+  id?: string
+  panels: Panel[] = []
+  enabled = true
+  connectionsOpen = true
+  name?: string
+  config?: { channel: string, host: string, port: number, interfaceGateway: { connected: boolean, enabled: boolean } }
 
-  /**
-   * @param {string} simId
-   * @param {*} simData 
-   * @returns {Simulation} 
-   */
-  static fromSimData(simId, simData) {
-    const sim = new Simulation();
-    sim.id = simId;
-    sim.name = simData.name;
-    simData.panels.forEach(panelData => {
-      sim.panels.push(Panel.fromSimData(panelData));
+  locationToPanelMap = new Map<string, string>()
+  time?: ClockData
+
+  static fromSimData(simId: string, simData: { name: string, panels: { id: string, name: string, neighbours: Location[], reportingLocations?: string[] } [] }) {
+    const sim = new Simulation()
+    sim.id = simId
+    sim.name = simData.name
+    simData.panels.forEach((panelData) => {
+      sim.panels.push(Panel.fromSimData(panelData))
       for (const loc of panelData.reportingLocations ?? []) {
         sim.locationToPanelMap.set(loc, panelData.id)
       }
-    });
-    return sim;
+    })
+
+    return sim
   }
 
-  /**
-   * 
-   * @param {string} panelId 
-   * @returns {Panel} 
-   */
-  getPanel(panelId) {
-    return this.panels.find((p) => {return p.id === panelId});
+  getPanel(panelId: string) {
+    return this.panels.find(p => p.id === panelId)
   }
 
-  /**
-   * 
-   * @param {string} location
-   * @returns {string|undefined}
-   */
-  getPanelByLocation(location) {
+  getPanelByLocation(location: string) {
     return this.locationToPanelMap.get(location)
   }
 }
