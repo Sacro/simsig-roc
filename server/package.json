@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
   },
   "author": "",
