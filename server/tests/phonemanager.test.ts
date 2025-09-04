@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest'
 import PhoneManager from '../src/phonemanager.ts'
 import Simulation from '../src/model/simulation.ts'
 import Train from '../src/model/train.ts'

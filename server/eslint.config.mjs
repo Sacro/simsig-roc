@@ -5,6 +5,7 @@ import { defineConfig } from 'eslint/config'
 import jest from 'eslint-plugin-jest'
 import stylistic from '@stylistic/eslint-plugin'
 import typescript from 'typescript-eslint'
+import vitest from '@vitest/eslint-plugin'
 
 // noinspection JSCheckFunctionSignatures
 export default defineConfig(
@@ -44,5 +45,5 @@ export default defineConfig(
     extends: [typescript.configs.disableTypeChecked],
   },
 
-  jest.configs['flat/recommended'],
+  vitest.configs.recommended,
 )

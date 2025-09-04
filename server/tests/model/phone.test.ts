@@ -1,3 +1,4 @@
+import { expect, test } from 'vitest'
 import Player from '../../src/model/player.ts'
 import { Phone } from '../../src/model/phone.ts'
 import Location from '../../src/model/location.ts'

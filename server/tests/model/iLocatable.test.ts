@@ -1,3 +1,5 @@
+import { expect, test } from 'vitest'
+
 import Location from '../../src/model/location.ts'
 import iLocatable from '../../src/model/iLocatable.ts'
 
