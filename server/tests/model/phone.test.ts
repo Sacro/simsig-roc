@@ -1,6 +1,6 @@
-import Player from '../../src/model/player'
-import { Phone } from '../../src/model/phone'
-import Location from '../../src/model/location'
+import Player from '../../src/model/player.ts'
+import { Phone } from '../../src/model/phone.ts'
+import Location from '../../src/model/location.ts'
 
 test('getId', () => {
   const phone = new Phone('id', 'name', Phone.TYPES.FIXED)
