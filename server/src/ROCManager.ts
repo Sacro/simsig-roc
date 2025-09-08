@@ -18,7 +18,7 @@ export default class ROCManager {
   private readonly phoneManager: PhoneManager
   private stompManager: STOMPManager
   private config: unknown
-  private channels: unknown
+  channels?: Record<string, string | null> | null
 
   constructor(io: Server, bot: DiscordBot, phoneManager: PhoneManager, stompManager: STOMPManager) {
     this.io = io
@@ -28,26 +28,23 @@ export default class ROCManager {
     console.info(chalk.yellow('constructor'), `Welcome! Yum yum!`)
   }
 
-  load(config: { channels: unknown, games: unknown[] }) {
+  load(config: { channels: Record<string, string>, games: unknown[] }) {
     this.channels = config.channels
     this.config = config
     this.stompManager.setGameManager(this)
     this.bot.setGameManager(this)
-    config.games.forEach((g) => { this.activateGame(g) }, this)
+    config.games.forEach((g) => {
+      this.activateGame(g)
+    }, this)
     this.phoneManager.generateMissingNeighbourPhones(this)
   }
 
-  /**
-   *
-   * @param {string} simId
-   * @returns {Simulation}
-   */
-  getSimData(simId) {
+  getSimData(simId: string) {
     const filePath = new URL(`../simulations/${simId}.json`, import.meta.url)
     let simConfig
     try {
-      /** @type {Simulation} */
-      simConfig = JSON.parse(fs.readFileSync(filePath, 'utf8'))
+      // fixme: probably needs better validation
+      simConfig = JSON.parse(fs.readFileSync(filePath, 'utf8')) as Simulation
     }
     catch (e) {
       console.error(`Couldn't read sim config for ${simId}:`, e)
@@ -60,7 +57,21 @@ export default class ROCManager {
     return this.sims.find(sim => sim.id === simId)
   }
 
-  activateGame(game: { channel: string, host: string, port: number, id: string, sim: string, interfaceGateway: { connected: boolean, enabled: boolean, login: string, password: string, port?: number }, interfaceGatewayPort: number | undefined }) {
+  activateGame(game: {
+    channel: string
+    host: string
+    port: number
+    id: string
+    sim: string
+    interfaceGateway: {
+      connected: boolean
+      enabled: boolean
+      login: string
+      password: string
+      port?: number
+    }
+    interfaceGatewayPort: number | undefined
+  }) {
     const gatewayInfo = game.interfaceGateway
     game.interfaceGatewayPort = gatewayInfo.port
     // remove from interfaceGateway object so that it's not passed to clients
@@ -350,7 +361,6 @@ export default class ROCManager {
         this.sendGameUpdateToPlayers()
       }
     },
-
     )
   }
 
@@ -493,7 +503,10 @@ export default class ROCManager {
   updatePlayerInfo(player) {
     const phones = this.phoneManager.getPhonesForDiscordId(player.discordId)
     const pm = this.phoneManager
-    phones.forEach((p) => { p.setSpeedDial(pm.getSpeedDialForPhone(p)); p.setTrainsAndMobiles(pm.getTrainsAndMobilesForPhone(p)) })
+    phones.forEach((p) => {
+      p.setSpeedDial(pm.getSpeedDialForPhone(p))
+      p.setTrainsAndMobiles(pm.getTrainsAndMobilesForPhone(p))
+    })
     const myPanels = []
     this.sims.forEach(s => myPanels.concat(s.panels.filter(p => p.player === player.discordId)))
     const info = {}

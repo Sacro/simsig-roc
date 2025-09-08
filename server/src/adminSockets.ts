@@ -2,6 +2,7 @@ import chalk from 'chalk'
 import { Socket } from 'socket.io'
 import ROCManager from './ROCManager.ts'
 import PhoneManager from './phonemanager.ts'
+import type Location from './model/location.ts'
 
 interface Config {
   superUsers: string[]
@@ -17,7 +18,7 @@ export function adminSockets(socket: Socket, gameManager: ROCManager, phoneManag
     }
   })
 
-  socket.on('createPhone', function (msg: { number: string, name: string, type: string, location?: null, incident: string, hidden: boolean }) {
+  socket.on('createPhone', function (msg: { number: string, name: string, type: string, location?: Location | null, incident: string, hidden: boolean }) {
     console.log(chalk.yellow('createPhone'), msg)
     try {
       phoneManager.generatePhoneForPerson(msg.number, msg.name, msg.type, msg.location, msg.hidden)
@@ -43,28 +44,30 @@ export function adminSockets(socket: Socket, gameManager: ROCManager, phoneManag
     }
   })
 
-  socket.on('enableInterfaceGateway', function (msg) {
+  socket.on('enableInterfaceGateway', function (msg: { simId: string }) {
     console.log(chalk.yellow('enableInterfaceGateway'), msg)
     gameManager.enableInterfaceGateway(msg.simId)
   })
 
-  socket.on('disableInterfaceGateway', function (msg) {
+  socket.on('disableInterfaceGateway', function (msg: { simId: string }) {
     console.log(chalk.yellow('disableInterfaceGateway'), msg)
     gameManager.disableInterfaceGateway(msg.simId)
   })
 
-  socket.on('enableConnections', function (msg) {
+  socket.on('enableConnections', function (msg: { simId: string }) {
     console.log(chalk.yellow('enableConnections'), msg)
     gameManager.enableConnections(msg.simId)
   })
 
-  socket.on('disableConnections', function (msg) {
+  socket.on('disableConnections', function (msg: { simId: string }) {
     console.log(chalk.yellow('disableConnections'), msg)
     gameManager.disableConnections(msg.simId)
   })
 
   // kick the user from the call handler thingey socket yum
   socket.on('adminKickFromCall', function (msg) {
+    // @ts-expect-error FIXME: needs fixing
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     gameManager.kickUserFromCall(msg)
   })
 }

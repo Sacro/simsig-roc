@@ -1,17 +1,17 @@
-// @ts-check
 import chalk from 'chalk'
-
 import { Client, GatewayIntentBits } from 'discord.js'
-/** @typedef {import("./ROCManager.js").default} ROCManager */
+import ROCManager from './ROCManager.ts'
 
 export default class DiscordBot {
-  /** @type {ROCManager} */
-  gameManager
+  gameManager: ROCManager | null
 
-  /** @type {Array} */
-  privateCallChannels = []
+  privateCallChannels: { id: string, inUse: boolean, reserved: boolean }[] = []
+  private client: Client
+  private token: string
+  private readonly prefix: string
+  private readonly guildId: string
 
-  constructor(token, prefix, guildId) {
+  constructor(token: string, prefix: string, guildId: string) {
     this.client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildPresences] })
     this.token = token
     this.prefix = prefix
@@ -19,27 +19,23 @@ export default class DiscordBot {
     this.gameManager = null
   }
 
-  /**
-   *
-   * @param {ROCManager} gameManager
-   */
-  setGameManager(gameManager) {
+  setGameManager(gameManager: ROCManager) {
     this.gameManager = gameManager
   }
 
   async setUpBot() {
     this.client.on('ready', () => {
-      console.info(chalk.blueBright('Discord.js'), chalk.yellow('Ready'), chalk.green('Logged in as:', chalk.white(this.client.user.tag)))
+      console.info(chalk.blueBright('Discord.js'), chalk.yellow('Ready'), chalk.green('Logged in as:', chalk.white(this.client.user?.tag)))
     })
 
-    this.client.on('message', (msg) => {
+    this.client.on('message', (msg: { content: string, reply: (string) => unknown }) => {
       if (msg.content === `${this.prefix}ping`) {
         msg.reply('Pong!')
       }
     })
 
     this.client.on('voiceStateUpdate', (oldState, newState) => {
-      if (!this.gameManager.isPlayer(newState.id) && !this.gameManager.isProspect(newState.id)) {
+      if (!this.gameManager?.isPlayer(newState.id) && !this.gameManager?.isProspect(newState.id)) {
         // Only handle voiceStateUpdates for player.
         return
       }
@@ -63,7 +59,10 @@ export default class DiscordBot {
           if (!(oldStatePrivateCall)) {
             // New Channel is private call, old is not.
             // This means they've left a chat and should go back to that when they leave a private call.
-            this.gameManager.players[newState.id].voiceChannelId = oldState.channelId
+            const player = this.gameManager.players[newState.id]
+            if (player !== undefined) {
+              player.voiceChannelId = oldState.channelId
+            }
           }
 
           console.info(chalk.magenta('voiceStateUpdate PCC'), this.privateCallChannels)
@@ -71,7 +70,7 @@ export default class DiscordBot {
 
         if (oldStatePrivateCall) {
           // Someone has left a privateCallChannel
-          if (oldState.channel.members.size === 0) {
+          if ((oldState.channel !== null) && (oldState.channel.members.size === 0)) {
             oldStatePrivateCall.reserved = false
             oldStatePrivateCall.inUse = false
             console.info(chalk.magenta('voiceStateUpdate PCC'), this.privateCallChannels)
@@ -80,7 +79,11 @@ export default class DiscordBot {
       }
     })
 
-    await this.client.login(this.token).then(() => { console.info(chalk.blueBright('Discord.js'), chalk.yellow('Login'), chalk.green('Login Successful!')) }).catch((x) => { console.error(chalk.blueBright('Discord.js'), chalk.yellow('Login'), chalk.red('Login Error'), x.toString()) })
+    await this.client.login(this.token).then(() => {
+      console.info(chalk.blueBright('Discord.js'), chalk.yellow('Login'), chalk.green('Login Successful!'))
+    }).catch((x: unknown) => {
+      console.error(chalk.blueBright('Discord.js'), chalk.yellow('Login'), chalk.red('Login Error'), x)
+    })
   }
 
   async configureVoiceChannels() {
@@ -93,16 +96,19 @@ export default class DiscordBot {
       this.privateCallChannels.push({ id: vc.id, reserved: false, inUse: false })
     }
 
-    for (const channel of Object.keys(this.gameManager.channels)) {
-      const staticChannel = voiceChannels.filter(x => x.name === this.gameManager.channels[channel]).first()
-      if (staticChannel !== null && typeof staticChannel !== 'undefined') {
-        this.gameManager.channels[channel] = staticChannel.id
+    if (this.gameManager?.channels !== null && this.gameManager?.channels !== undefined) {
+      for (const channel of Object.keys(this.gameManager?.channels)) {
+        const staticChannel = voiceChannels.filter(x => x.name === this.gameManager.channels[channel]).first()
+        if (staticChannel !== null && typeof staticChannel !== 'undefined') {
+          this.gameManager.channels[channel] = staticChannel.id
+        }
+        else {
+          console.warn(chalk.red('Static Channel'), channel, chalk.red('does not exist for this Guild'))
+        }
       }
-      else {
-        console.warn(chalk.red('Static Channel'), channel, chalk.red('does not exist for this Guild'))
-      }
+
+      console.log(chalk.yellow('configureVoiceChannels'), this.gameManager.channels)
     }
-    console.log(chalk.yellow('configureVoiceChannels'), this.gameManager.channels)
 
     for (const sim of Object.keys(this.gameManager.sims)) {
       if ('channel' in this.gameManager.sims[sim]) {
@@ -134,7 +140,7 @@ export default class DiscordBot {
     const member = await this.getMember(userId)
     if (member) {
       if (typeof member.voice !== 'undefined' && member.voice.channel !== null) {
-        return await member.voice.channel.id
+        return member.voice.channel.id
       }
       else {
         console.warn(chalk.red('getUserVoiceChannel'), chalk.yellow('No voice channel:'), chalk.white(userId))
@@ -148,10 +154,10 @@ export default class DiscordBot {
   }
 
   /**
- *
- * @param {string} channel
- * @returns {import('discord.js').GuildBasedChannel}
- */
+   *
+   * @param {string} channel
+   * @returns {import('discord.js').GuildBasedChannel}
+   */
   getVoiceChannelByName(channel) {
     const guild = this.client.guilds.cache.get(this.guildId)
     const vc = guild.channels.cache.find(chan => chan.name === channel)
@@ -194,7 +200,7 @@ export default class DiscordBot {
    * @returns {string} channelId;
    */
   getAvailableCallChannel() {
-    const channel = this.privateCallChannels.find(c => c.reserved === false && c.inUse === false)
+    const channel = this.privateCallChannels.find(c => !c.reserved && !c.inUse)
     if (typeof channel === 'undefined') {
       console.error(chalk.red('No available private call rooms:'), this.privateCallChannels)
       return null
@@ -205,7 +211,7 @@ export default class DiscordBot {
   }
 
   releasePrivateCallChannelReservation(channelId) {
-    const channel = this.privateCallChannels.find(c => c.id === channelId && c.reserved === true)
+    const channel = this.privateCallChannels.find(c => c.id === channelId && c.reserved)
     if (typeof channel !== 'undefined') {
       channel.reserved = false
     }

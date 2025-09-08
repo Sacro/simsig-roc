@@ -5,17 +5,17 @@ export default class Player {
   #displayName = ''
   // #socket: Socket
   discordId: string
-  // #voiceChannelId: string
+  voiceChannelId: string | null
   // #callQueue: unknown = {}
   // #inCall: boolean
   // #sim: string
   // #isConnected: boolean
   // #panel?: Panel
 
-  constructor(_socket: Socket, discordId: string, _voiceChannelId: string | null) {
+  constructor(_socket: Socket, discordId: string, voiceChannelId: string | null) {
     // this.#socket = socket
     this.discordId = discordId
-    // this.#voiceChannelId = voiceChannelId
+    this.voiceChannelId = voiceChannelId
     // this.#callQueue = {}
     // this.#inCall = false
     // this.#sim = ''

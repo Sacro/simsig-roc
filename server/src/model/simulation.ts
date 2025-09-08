@@ -13,7 +13,7 @@ export default class Simulation {
   locationToPanelMap = new Map<string, string>()
   time?: ClockData
 
-  static fromSimData(simId: string, simData: { name: string, panels: { id: string, name: string, neighbours: Location[], reportingLocations?: string[] } [] }) {
+  static fromSimData(simId: string, simData: Simulation) {
     const sim = new Simulation()
     sim.id = simId
     sim.name = simData.name

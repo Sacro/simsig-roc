@@ -43,7 +43,7 @@ export default class PhoneManager {
     return phone
   }
 
-  generatePhoneForPerson(number: string, name: string, type: string = Phone.TYPES.MOBILE, location: Location, hidden = false, ...args: unknown[]) {
+  generatePhoneForPerson(number: string, name: string, type: string = Phone.TYPES.MOBILE, location?: Location | null, hidden = false, ...args: unknown[]) {
     console.log(chalk.yellow('generatePhoneForPerson'), ...args)
     if (number && !this.phones.some(p => p.getId() === number)) {
       console.log('created phone')
@@ -131,7 +131,7 @@ export default class PhoneManager {
   }
 
   getPhone(phoneId: string) {
-    this.phones.find(p => p.getId() === phoneId)
+    return this.phones.find(p => p.getId() === phoneId)
   }
 
   getAllPhones() {
