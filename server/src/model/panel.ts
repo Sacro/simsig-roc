@@ -1,21 +1,20 @@
-/** @typedef {import("./phone.js").default} Phone */
-/** @typedef {import("./location.js").default} Location */
-export default class Panel {
-  id;
-  name;
-  player;
-  /** @type {Location[]} */
-  neighbours = [];
-  /** @type {{ id: string, displayName: string, avatarURL: string } | undefined} */
-  playerDetails;
-  /**@type {Phone} */
-  phone;
+import Location from './location.ts'
+import Phone from './phone.ts'
 
-  static fromSimData(panelData) {
-    const panel = new Panel();
-    panel.id = panelData.id;
-    panel.name = panelData.name;
-    panelData.neighbours.forEach(p => panel.neighbours.push(p));
-    return panelData;
+export default class Panel {
+  id: string | undefined
+  name: string | undefined
+  player?: string
+  neighbours: Location[] = []
+  playerDetails: { id: string, displayName: string, avatarURL: string } | undefined
+  phone?: Phone
+  reportingLocations?: string[]
+
+  static fromSimData(panelData: Panel) {
+    const panel = new Panel()
+    panel.id = panelData.id
+    panel.name = panelData.name
+    panelData.neighbours.forEach(p => panel.neighbours.push(p))
+    return panelData
   }
 }

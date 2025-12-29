@@ -1,14 +1,13 @@
 export default class PhonebookEntry {
-  /** @type {string} */
-  id;
-  /** @type {string} */
-  name;
-  /** @type {string} */
-  type;
+  id: string
+  name: string
+  type: string
+  speedDial?: unknown
+  trainsAndMobiles?: unknown
 
-  constructor(id,name,type) {
-    this.id = id;
-    this.name = name;
-    this.type = type;
+  constructor(id: string, name: string, type: string) {
+    this.id = id
+    this.name = name
+    this.type = type
   }
 }

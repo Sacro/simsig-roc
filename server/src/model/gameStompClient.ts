@@ -1,25 +1,18 @@
-/** @typedef {import("@stomp/stompjs").Client} Client */
+import { Client } from '@stomp/stompjs'
+
 /**
  * Repesents a container for a STOMP client for a Game.
  */
-export default class GameStompClient{
-  /** @type {string} */
-  id;
+export default class GameStompClient {
+  id: string
 
-  /** @type {Client} */
-  client;
+  client: Client
 
-  game;
+  game: unknown
 
-  /**
-   * 
-   * @param {string} id 
-   * @param {Client} client
-   * @param {*} game  
-   */
-  constructor(id, game, client) {
-    this.id = id;
-    this.game = game;
+  constructor(id: string, game: unknown, client: Client) {
+    this.id = id
+    this.game = game
     this.client = client
   }
 }
