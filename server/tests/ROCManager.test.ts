@@ -1,5 +1,3 @@
-// @ts-nocheck
-import { jest } from '@jest/globals';
 import ROCManager from '../src/ROCManager.js';
 import Player from '../src/model/player.js';
 import Simulation from '../src/model/simulation.js';
@@ -10,7 +8,7 @@ import Phone from '../src/model/phone.js';
 class MockPhoneManager {
   phones = [];
   sims = [];
-  
+
   unassignPhone(phone) { return true; }
   getPhonesForDiscordId() { return []; }
   getSpeedDialForPhone() { return []; }
@@ -46,7 +44,7 @@ class MockDiscordBot {
   token = '';
   prefix = '!';
   guildId = 'test-guild';
-  
+
   getMember() { return Promise.resolve({ displayAvatarURL: () => '', displayName: '' }); }
   getUserVoiceChannel() { return Promise.resolve(null); }
   setUserVoiceChannel() { return Promise.resolve(true); }
@@ -70,7 +68,7 @@ class MockSTOMPManager {
   phoneManager = null;
   clients = [];
   trainManager = null;
-  
+
   setGameManager() {}
   createClientForGame() { return true; }
   activateClientForGame() { return true; }
@@ -131,7 +129,7 @@ describe('ROCManager.releasePanel', () => {
     // Create ROCManager instance with mocked dependencies
     rocManager = new ROCManager(mockIo, mockDiscordBot, mockPhoneManager, mockSTOMPManager);
     rocManager.config = mockConfig;
-    
+
     // Setup test player
     const testPlayer = new Player(mockSocket, 'test-user', 'test-channel');
     rocManager.players['test-user'] = testPlayer;
